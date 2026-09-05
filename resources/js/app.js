@@ -1,147 +1,326 @@
-document.addEventListener('DOMContentLoaded', () => {
-	const detailModal = document.querySelector('#assignmentModal');
-	const permitModal = document.querySelector('#permitModal');
-	const toast = document.querySelector('#toast');
-	const coachLauncher = document.querySelector('#coachLauncher');
-	const coachWindow = document.querySelector('#coachWindow');
+document.addEventListener("DOMContentLoaded", () => {
+    const publicChatLauncher = document.querySelector("#publicChatLauncher");
+    const publicChatWindow = document.querySelector("#publicChatWindow");
 
-	if (coachLauncher && coachWindow) {
-		const coachClose = document.querySelector('#coachClose');
-		const coachForm = document.querySelector('#coachForm');
-		const coachInput = document.querySelector('#coachInput');
-		const conversation = document.querySelector('#coachConversation');
+    if (publicChatLauncher && publicChatWindow) {
+        const publicChatClose = document.querySelector("#publicChatClose");
+        const publicChatForm = document.querySelector("#publicChatForm");
+        const publicChatInput = document.querySelector("#publicChatInput");
+        const publicConversation = document.querySelector(
+            "#publicChatConversation",
+        );
+        const addPublicMessage = (message, type) => {
+            const item = document.createElement("div");
+            item.className = `public-chat-message public-chat-${type}`;
+            item.textContent = message;
+            publicConversation.appendChild(item);
+            publicConversation.scrollTop = publicConversation.scrollHeight;
+        };
+        const askPublicChat = async (message) => {
+            addPublicMessage(message, "user");
+            const loading = document.createElement("div");
+            loading.className = "public-chat-message public-chat-bot";
+            loading.textContent = "Sebentar, aku cek informasinya...";
+            publicConversation.appendChild(loading);
+            try {
+                const response = await fetch("/api/school-chat", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Accept: "application/json",
+                    },
+                    body: JSON.stringify({ message }),
+                });
+                const result = await response.json();
+                loading.textContent =
+                    result.reply || "Aku belum menemukan jawabannya.";
+            } catch {
+                loading.textContent =
+                    "Koneksi sedang beristirahat. Silakan coba lagi.";
+            }
+        };
+        publicChatLauncher.addEventListener("click", () => {
+            const isOpen = publicChatWindow.classList.toggle("is-open");
+            publicChatWindow.setAttribute("aria-hidden", String(!isOpen));
+        });
+        publicChatClose.addEventListener("click", () =>
+            publicChatWindow.classList.remove("is-open"),
+        );
+        document
+            .querySelectorAll("[data-public-question]")
+            .forEach((button) =>
+                button.addEventListener("click", () =>
+                    askPublicChat(button.dataset.publicQuestion),
+                ),
+            );
+        publicChatForm.addEventListener("submit", (event) => {
+            event.preventDefault();
+            const message = publicChatInput.value.trim();
+            if (!message) return;
+            publicChatInput.value = "";
+            askPublicChat(message);
+        });
+    }
 
-		const addMessage = (message, type) => {
-			const item = document.createElement('div');
-			item.className = `coach-message coach-message-${type}`;
-			const content = document.createElement('div');
-			content.textContent = message;
-			item.appendChild(content);
-			conversation.appendChild(item);
-			conversation.scrollTop = conversation.scrollHeight;
-		};
+    const landingNav = document.querySelector("[data-landing-nav]");
+    const landingMenu = document.querySelector("[data-landing-menu]");
+    const landingLinks = document.querySelector(".landing-links");
+    if (landingNav) {
+        let landingScrollFrame = null;
+        const updateLandingScroll = () => {
+            const scrollableHeight =
+                document.documentElement.scrollHeight - window.innerHeight;
+            const progress =
+                scrollableHeight > 0
+                    ? (window.scrollY / scrollableHeight) * 100
+                    : 0;
+            document.documentElement.style.setProperty(
+                "--landing-scroll-progress",
+                `${progress}%`,
+            );
+            landingNav.classList.toggle("is-scrolled", window.scrollY > 18);
+            landingScrollFrame = null;
+        };
+        const requestLandingScrollUpdate = () => {
+            if (landingScrollFrame === null)
+                landingScrollFrame =
+                    window.requestAnimationFrame(updateLandingScroll);
+        };
+        const updateLandingNav = () => requestLandingScrollUpdate();
+        updateLandingNav();
+        window.addEventListener("scroll", updateLandingNav, { passive: true });
+    }
+    if (landingMenu && landingLinks)
+        landingMenu.addEventListener("click", () => {
+            const isOpen = landingLinks.classList.toggle("is-open");
+            landingMenu.setAttribute("aria-expanded", String(isOpen));
+        });
+    document.querySelectorAll(".landing-links a").forEach((link) =>
+        link.addEventListener("click", () => {
+            landingLinks?.classList.remove("is-open");
+            landingMenu?.setAttribute("aria-expanded", "false");
+        }),
+    );
 
-		const askCoach = async (message) => {
-			addMessage(message, 'user');
-			const loading = document.createElement('div');
-			loading.className = 'coach-message coach-message-response';
-			loading.innerHTML = '<div>Sebentar, aku membaca progresmu...</div>';
-			conversation.appendChild(loading);
+    const landingRevealItems = document.querySelectorAll(
+        ".school-landing main > section:not(#beranda), .school-landing .program-card, .school-landing .footer-main",
+    );
+    if (landingRevealItems.length) {
+        landingRevealItems.forEach((item, index) => {
+            item.classList.add("reveal-on-scroll");
+            if (item.classList.contains("program-card")) {
+                item.style.transitionDelay = `${(index % 5) * 55}ms`;
+            }
+        });
 
-			try {
-				const response = await fetch('/api/student-coach/chat', {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-					body: JSON.stringify({ message }),
-				});
-				const result = await response.json();
-				loading.querySelector('div').textContent = result.reply || 'Aku belum bisa menemukan jawabannya.';
-			} catch {
-				loading.querySelector('div').textContent = 'Koneksi sedang beristirahat. Coba lagi sebentar.';
-			}
-		};
+        if ("IntersectionObserver" in window) {
+            const landingRevealObserver = new IntersectionObserver(
+                (entries, observer) => {
+                    entries.forEach((entry) => {
+                        if (!entry.isIntersecting) return;
+                        entry.target.classList.add("is-visible");
+                        observer.unobserve(entry.target);
+                    });
+                },
+                { threshold: 0.12, rootMargin: "0px 0px -40px" },
+            );
+            landingRevealItems.forEach((item) =>
+                landingRevealObserver.observe(item),
+            );
+        } else {
+            landingRevealItems.forEach((item) =>
+                item.classList.add("is-visible"),
+            );
+        }
+    }
 
-		coachLauncher.addEventListener('click', () => {
-			const isOpen = coachWindow.classList.toggle('is-open');
-			coachWindow.setAttribute('aria-hidden', String(!isOpen));
-		});
-		coachClose.addEventListener('click', () => {
-			coachWindow.classList.remove('is-open');
-			coachWindow.setAttribute('aria-hidden', 'true');
-		});
-		document.querySelectorAll('[data-coach-tab]').forEach((tab) => {
-			tab.addEventListener('click', () => {
-				document.querySelector('.coach-tab.is-active').classList.remove('is-active');
-				document.querySelector('.coach-panel.is-active').classList.remove('is-active');
-				tab.classList.add('is-active');
-				document.querySelector(`[data-coach-panel="${tab.dataset.coachTab}"]`).classList.add('is-active');
-			});
-		});
-		document.querySelectorAll('[data-coach-question]').forEach((button) => button.addEventListener('click', () => askCoach(button.dataset.coachQuestion)));
-		coachForm.addEventListener('submit', (event) => {
-			event.preventDefault();
-			const message = coachInput.value.trim();
-			if (!message) return;
-			coachInput.value = '';
-			askCoach(message);
-		});
-	}
+    const detailModal = document.querySelector("#assignmentModal");
+    const permitModal = document.querySelector("#permitModal");
+    const toast = document.querySelector("#toast");
+    const coachLauncher = document.querySelector("#coachLauncher");
+    const coachWindow = document.querySelector("#coachWindow");
 
-	if (!detailModal || !permitModal || !toast) {
-		return;
-	}
+    if (coachLauncher && coachWindow) {
+        const coachClose = document.querySelector("#coachClose");
+        const coachForm = document.querySelector("#coachForm");
+        const coachInput = document.querySelector("#coachInput");
+        const conversation = document.querySelector("#coachConversation");
 
-	const detailTitle = document.querySelector('#detailTitle');
-	const detailSubject = document.querySelector('#detailSubject');
-	const detailDescription = document.querySelector('#detailDescription');
-	const detailDue = document.querySelector('#detailDue');
-	const detailPoints = document.querySelector('#detailPoints');
-	const detailStatus = document.querySelector('#detailStatus');
-	const detailUpload = document.querySelector('#detailUpload');
-	const fileName = document.querySelector('#fileName');
+        const addMessage = (message, type) => {
+            const item = document.createElement("div");
+            item.className = `coach-message coach-message-${type}`;
+            const content = document.createElement("div");
+            content.textContent = message;
+            item.appendChild(content);
+            conversation.appendChild(item);
+            conversation.scrollTop = conversation.scrollHeight;
+        };
 
-	const showToast = (message) => {
-		toast.querySelector('span').textContent = message;
-		toast.classList.add('is-visible');
-		window.setTimeout(() => toast.classList.remove('is-visible'), 2800);
-	};
+        const askCoach = async (message) => {
+            addMessage(message, "user");
+            const loading = document.createElement("div");
+            loading.className = "coach-message coach-message-response";
+            loading.innerHTML = "<div>Sebentar, aku membaca progresmu...</div>";
+            conversation.appendChild(loading);
 
-	document.querySelectorAll('[data-assignment]').forEach((card) => {
-		card.addEventListener('click', () => {
-			detailTitle.textContent = card.dataset.title;
-			detailSubject.textContent = card.dataset.subject;
-			detailDescription.textContent = card.dataset.description;
-			detailDue.textContent = card.dataset.due;
-			detailPoints.textContent = `${card.dataset.points} poin`;
-			detailStatus.textContent = card.dataset.status;
-			detailStatus.dataset.tone = card.dataset.tone;
-			detailUpload.value = '';
-			 document.querySelector('#assignmentForm').action = `/murid/tugas/${card.dataset.id}/kumpulkan`;
-			fileName.textContent = 'Pilih file dari perangkat';
-			detailModal.classList.add('is-open');
-		});
-	});
+            try {
+                const response = await fetch("/api/student-coach/chat", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Accept: "application/json",
+                    },
+                    body: JSON.stringify({ message }),
+                });
+                const result = await response.json();
+                loading.querySelector("div").textContent =
+                    result.reply || "Aku belum bisa menemukan jawabannya.";
+            } catch {
+                loading.querySelector("div").textContent =
+                    "Koneksi sedang beristirahat. Coba lagi sebentar.";
+            }
+        };
 
-	document.querySelectorAll('[data-close-modal]').forEach((button) => {
-		button.addEventListener('click', () => document.querySelector(`#${button.dataset.closeModal}`).classList.remove('is-open'));
-	});
+        coachLauncher.addEventListener("click", () => {
+            const isOpen = coachWindow.classList.toggle("is-open");
+            coachWindow.setAttribute("aria-hidden", String(!isOpen));
+        });
+        coachClose.addEventListener("click", () => {
+            coachWindow.classList.remove("is-open");
+            coachWindow.setAttribute("aria-hidden", "true");
+        });
+        document.querySelectorAll("[data-coach-tab]").forEach((tab) => {
+            tab.addEventListener("click", () => {
+                document
+                    .querySelector(".coach-tab.is-active")
+                    .classList.remove("is-active");
+                document
+                    .querySelector(".coach-panel.is-active")
+                    .classList.remove("is-active");
+                tab.classList.add("is-active");
+                document
+                    .querySelector(
+                        `[data-coach-panel="${tab.dataset.coachTab}"]`,
+                    )
+                    .classList.add("is-active");
+            });
+        });
+        document
+            .querySelectorAll("[data-coach-question]")
+            .forEach((button) =>
+                button.addEventListener("click", () =>
+                    askCoach(button.dataset.coachQuestion),
+                ),
+            );
+        coachForm.addEventListener("submit", (event) => {
+            event.preventDefault();
+            const message = coachInput.value.trim();
+            if (!message) return;
+            coachInput.value = "";
+            askCoach(message);
+        });
+    }
 
-	document.querySelectorAll('.modal-backdrop').forEach((backdrop) => {
-		backdrop.addEventListener('click', (event) => {
-			if (event.target === backdrop) backdrop.closest('.modal').classList.remove('is-open');
-		});
-	});
+    if (!detailModal || !permitModal || !toast) {
+        return;
+    }
 
-	document.querySelector('#openPermit').addEventListener('click', () => permitModal.classList.add('is-open'));
-	document.querySelector('#detailUpload').addEventListener('change', (event) => {
-		fileName.textContent = event.target.files[0]?.name || 'Pilih file dari perangkat';
-	});
-	document.querySelector('#assignmentForm').addEventListener('submit', () => {
-		detailModal.classList.remove('is-open');
-	});
-	document.querySelector('#permitForm').addEventListener('submit', (event) => {
-		permitModal.classList.remove('is-open');
-	});
+    const detailTitle = document.querySelector("#detailTitle");
+    const detailSubject = document.querySelector("#detailSubject");
+    const detailDescription = document.querySelector("#detailDescription");
+    const detailDue = document.querySelector("#detailDue");
+    const detailPoints = document.querySelector("#detailPoints");
+    const detailStatus = document.querySelector("#detailStatus");
+    const detailUpload = document.querySelector("#detailUpload");
+    const fileName = document.querySelector("#fileName");
 
-	document.querySelectorAll('.filter-pill').forEach((pill) => {
-		pill.addEventListener('click', () => {
-			document.querySelector('.filter-pill.is-active').classList.remove('is-active');
-			pill.classList.add('is-active');
-			const filter = pill.dataset.filter;
-			document.querySelectorAll('[data-assignment]').forEach((card) => {
-				card.hidden = filter !== 'all' && card.dataset.state !== filter;
-			});
-		});
-	});
+    const showToast = (message) => {
+        toast.querySelector("span").textContent = message;
+        toast.classList.add("is-visible");
+        window.setTimeout(() => toast.classList.remove("is-visible"), 2800);
+    };
 
-	document.querySelectorAll('[data-nav]').forEach((link) => {
-		link.addEventListener('click', (event) => {
-			event.preventDefault();
-			document.querySelector('.side-link.is-active')?.classList.remove('is-active');
-			link.classList.add('is-active');
-			showToast(`${link.dataset.nav} siap digunakan pada tahap berikutnya.`);
-		});
-	});
+    document.querySelectorAll("[data-assignment]").forEach((card) => {
+        card.addEventListener("click", () => {
+            detailTitle.textContent = card.dataset.title;
+            detailSubject.textContent = card.dataset.subject;
+            detailDescription.textContent = card.dataset.description;
+            detailDue.textContent = card.dataset.due;
+            detailPoints.textContent = `${card.dataset.points} poin`;
+            detailStatus.textContent = card.dataset.status;
+            detailStatus.dataset.tone = card.dataset.tone;
+            detailUpload.value = "";
+            document.querySelector("#assignmentForm").action =
+                `/murid/tugas/${card.dataset.id}/kumpulkan`;
+            fileName.textContent = "Pilih file dari perangkat";
+            detailModal.classList.add("is-open");
+        });
+    });
 
-	document.querySelector('#mobileMenu').addEventListener('click', () => document.querySelector('.sidebar').classList.toggle('is-mobile-open'));
+    document.querySelectorAll("[data-close-modal]").forEach((button) => {
+        button.addEventListener("click", () =>
+            document
+                .querySelector(`#${button.dataset.closeModal}`)
+                .classList.remove("is-open"),
+        );
+    });
+
+    document.querySelectorAll(".modal-backdrop").forEach((backdrop) => {
+        backdrop.addEventListener("click", (event) => {
+            if (event.target === backdrop)
+                backdrop.closest(".modal").classList.remove("is-open");
+        });
+    });
+
+    document
+        .querySelector("#openPermit")
+        .addEventListener("click", () => permitModal.classList.add("is-open"));
+    document
+        .querySelector("#detailUpload")
+        .addEventListener("change", (event) => {
+            fileName.textContent =
+                event.target.files[0]?.name || "Pilih file dari perangkat";
+        });
+    document.querySelector("#assignmentForm").addEventListener("submit", () => {
+        detailModal.classList.remove("is-open");
+    });
+    document
+        .querySelector("#permitForm")
+        .addEventListener("submit", (event) => {
+            permitModal.classList.remove("is-open");
+        });
+
+    document.querySelectorAll(".filter-pill").forEach((pill) => {
+        pill.addEventListener("click", () => {
+            document
+                .querySelector(".filter-pill.is-active")
+                .classList.remove("is-active");
+            pill.classList.add("is-active");
+            const filter = pill.dataset.filter;
+            document.querySelectorAll("[data-assignment]").forEach((card) => {
+                card.hidden = filter !== "all" && card.dataset.state !== filter;
+            });
+        });
+    });
+
+    document.querySelectorAll("[data-nav]").forEach((link) => {
+        link.addEventListener("click", (event) => {
+            event.preventDefault();
+            document
+                .querySelector(".side-link.is-active")
+                ?.classList.remove("is-active");
+            link.classList.add("is-active");
+            showToast(
+                `${link.dataset.nav} siap digunakan pada tahap berikutnya.`,
+            );
+        });
+    });
+
+    document
+        .querySelector("#mobileMenu")
+        .addEventListener("click", () =>
+            document
+                .querySelector(".sidebar")
+                .classList.toggle("is-mobile-open"),
+        );
 });

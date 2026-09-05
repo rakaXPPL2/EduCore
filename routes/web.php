@@ -6,15 +6,25 @@ use App\Http\Controllers\StudentAcademicController;
 use App\Http\Controllers\StudentDashboardController;
 use App\Http\Controllers\TeacherAcademicController;
 use App\Http\Controllers\TeacherDashboardController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+
+Route::get('/', function () {
+    if (Auth::check()) {
+        return Auth::user()->isTeacher()
+            ? app(TeacherDashboardController::class)->index()
+            : app(StudentDashboardController::class)->index();
+    }
+
+    return view('landing');
+})->name('landing');
 
 Route::get('/login', [AuthController::class, 'create'])->name('login');
 Route::post('/login', [AuthController::class, 'store'])->name('login.store');
 Route::post('/logout', [AuthController::class, 'destroy'])->middleware('auth')->name('logout');
 
 Route::middleware(['auth', 'role:student'])->group(function () {
-    Route::get('/', [StudentDashboardController::class, 'index'])->name('student.dashboard');
-    Route::get('/dashboard-murid', [StudentDashboardController::class, 'index']);
+    Route::get('/dashboard-murid', [StudentDashboardController::class, 'index'])->name('student.dashboard');
 
     Route::controller(StudentDashboardController::class)->prefix('murid')->name('student.')->group(function () {
         Route::get('/jadwal', 'schedule')->name('schedule');

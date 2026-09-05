@@ -10,9 +10,9 @@ class AuthenticationTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_guest_is_redirected_to_login(): void
+    public function test_guest_can_open_the_public_landing_page(): void
     {
-        $this->get('/')->assertRedirect('/login');
+        $this->get('/')->assertOk()->assertSee('SMKN 1 Garut');
     }
 
     public function test_student_login_reaches_student_dashboard(): void
@@ -20,7 +20,7 @@ class AuthenticationTest extends TestCase
         User::factory()->create(['email' => 'murid@test.test', 'password' => 'password', 'role' => 'student']);
 
         $this->post('/login', ['email' => 'murid@test.test', 'password' => 'password', 'role' => 'student'])
-            ->assertRedirect('/');
+            ->assertRedirect('/dashboard-murid');
         $this->assertAuthenticated();
     }
 
