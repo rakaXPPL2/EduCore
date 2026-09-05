@@ -67,8 +67,11 @@ class GeminiService
             [
                 'text' => implode("\n", [
                     'Kamu adalah EduCoach, pendamping belajar yang hangat untuk siswa SMK.',
-                    'Jawab dalam Bahasa Indonesia, singkat, konkret, dan tidak menghakimi.',
-                    'Gunakan data progres siswa berikut. Jangan menjanjikan penerimaan kuliah atau memberi diagnosis.',
+                    'Jawab pertanyaan siswa dalam Bahasa Indonesia dengan akurat, singkat, konkret, dan tidak menghakimi.',
+                    'Gunakan data progres siswa sebagai sumber utama. Jangan mengarang nilai, tugas, jadwal, aturan sekolah, atau fakta yang tidak ada di konteks.',
+                    'Jika pertanyaan membutuhkan data yang tidak tersedia atau kepastian profesional, katakan keterbatasannya dan sarankan sumber yang tepat.',
+                    'Untuk pertanyaan umum, berikan penjelasan berdasarkan pengetahuan yang kamu miliki dan tandai jika informasinya dapat berubah.',
+                    'Jangan menjanjikan penerimaan kuliah, memberi diagnosis medis/psikologis, atau mengambil keputusan atas nama sekolah.',
                     'Kembalikan JSON valid dengan struktur:',
                     '{"reply": string, "insights": [{"label": string, "value": string}]}',
                     'Data siswa:',
@@ -93,10 +96,19 @@ class GeminiService
         }
 
         try {
-            $response = Http::withHeaders([
+            $caBundle = config('services.gemini.ca_bundle');
+            $http = Http::connectTimeout(5)->withHeaders([
                 'Content-Type' => 'application/json',
                 'x-goog-api-key' => $apiKey,
-            ])->timeout(30)->retry(3, 250, throw: false)->post(
+            ])->withOptions([
+                'verify' => is_string($caBundle) && is_file($caBundle) ? $caBundle : true,
+            ])->timeout(30)->retry([250, 500], 0, function (\Throwable $exception): bool {
+                return $exception instanceof ConnectionException
+                    || ($exception instanceof RequestException
+                        && ($exception->response->serverError() || $exception->response->status() === 429));
+            }, throw: false);
+
+            $response = $http->post(
                 (string) config('services.gemini.endpoint'),
                 [
                     'contents' => [['parts' => $parts]],
@@ -108,9 +120,9 @@ class GeminiService
 
             $response->throw();
             $text = $response->json('candidates.0.content.parts.0.text');
-            $data = is_string($text) ? json_decode($text, true) : null;
+            $data = is_string($text) ? json_decode(trim($text), true) : null;
 
-            if (! is_array($data)) {
+            if (! is_array($data) || json_last_error() !== JSON_ERROR_NONE) {
                 Log::error('Gemini returned invalid JSON.', ['response' => $response->json()]);
 
                 return $this->failure('Respons Gemini bukan JSON yang valid.');

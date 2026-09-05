@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StorePermitRequest;
+use App\Http\Requests\SubmitAssignmentRequest;
 use App\Models\Assignment;
 use App\Models\Grade;
 use App\Models\LearningMaterial;
@@ -72,6 +73,17 @@ class StudentDashboardController extends Controller
         ]);
 
         return to_route('student.permits')->with('success', 'Pengajuan izin berhasil dikirim.');
+    }
+
+    public function submitAssignment(SubmitAssignmentRequest $request, Assignment $assignment): RedirectResponse
+    {
+        $assignment->update([
+            'status' => 'submitted',
+            'submitted_at' => now(),
+            'submission_path' => $request->file('submission')->store('assignment-submissions'),
+        ]);
+
+        return to_route('student.dashboard')->with('success', 'Tugas berhasil dikumpulkan.');
     }
 
     private function page(string $title, string $description, array $data): View
