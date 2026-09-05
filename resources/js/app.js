@@ -96,6 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			detailStatus.textContent = card.dataset.status;
 			detailStatus.dataset.tone = card.dataset.tone;
 			detailUpload.value = '';
+			 document.querySelector('#assignmentForm').action = `/murid/tugas/${card.dataset.id}/kumpulkan`;
 			fileName.textContent = 'Pilih file dari perangkat';
 			detailModal.classList.add('is-open');
 		});
@@ -115,16 +116,11 @@ document.addEventListener('DOMContentLoaded', () => {
 	document.querySelector('#detailUpload').addEventListener('change', (event) => {
 		fileName.textContent = event.target.files[0]?.name || 'Pilih file dari perangkat';
 	});
-	document.querySelector('#assignmentForm').addEventListener('submit', (event) => {
-		event.preventDefault();
+	document.querySelector('#assignmentForm').addEventListener('submit', () => {
 		detailModal.classList.remove('is-open');
-		showToast('Tugas berhasil dikumpulkan sebagai draft demo.');
 	});
 	document.querySelector('#permitForm').addEventListener('submit', (event) => {
-		event.preventDefault();
 		permitModal.classList.remove('is-open');
-		event.target.reset();
-		showToast('Pengajuan izin tersimpan sebagai draft demo.');
 	});
 
 	document.querySelectorAll('.filter-pill').forEach((pill) => {

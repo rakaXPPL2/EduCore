@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Controllers\LokerPklController;
 use App\Http\Controllers\StudentDashboardController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [StudentDashboardController::class, 'index'])->name('student.dashboard');
 Route::get('/dashboard-murid', [StudentDashboardController::class, 'index']);
+Route::get('/loker-pkl', [LokerPklController::class, 'index'])->name('loker-pkl.index');
 
 Route::controller(StudentDashboardController::class)->prefix('murid')->name('student.')->group(function () {
     Route::get('/jadwal', 'schedule')->name('schedule');
@@ -12,4 +14,5 @@ Route::controller(StudentDashboardController::class)->prefix('murid')->name('stu
     Route::get('/materi', 'materials')->name('materials');
     Route::get('/surat-izin', 'permits')->name('permits');
     Route::post('/surat-izin', 'storePermit')->name('permits.store');
+    Route::post('/tugas/{assignment}/kumpulkan', 'submitAssignment')->name('assignments.submit');
 });
