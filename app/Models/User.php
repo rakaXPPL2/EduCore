@@ -54,6 +54,21 @@ class User extends Authenticatable
         return $this->hasMany(ChatMessage::class, 'recipient_id');
     }
 
+    public function pklApplications(): HasMany
+    {
+        return $this->hasMany(PklApplication::class);
+    }
+
+    public function pklReports(): HasMany
+    {
+        return $this->hasMany(PklReport::class);
+    }
+
+    public function pklDefenses(): HasMany
+    {
+        return $this->hasMany(PklDefense::class);
+    }
+
     /**
      * Get the attributes that should be cast.
      *

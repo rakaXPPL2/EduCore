@@ -5,6 +5,8 @@ namespace Database\Seeders;
 use App\Models\Assignment;
 use App\Models\Grade;
 use App\Models\LearningMaterial;
+use App\Models\LokerPkl;
+use App\Models\PklSetting;
 use App\Models\Schedule;
 use App\Models\SchoolClass;
 use App\Models\Subject;
@@ -55,6 +57,9 @@ class DatabaseSeeder extends Seeder
         $teacher = User::query()->where('email', 'guru@educore.test')->firstOrFail();
         $schoolClass = SchoolClass::create(['name' => 'XI RPL 2', 'level' => 'XI', 'homeroom_teacher_id' => $teacher->id]);
         User::query()->where('role', 'student')->update(['school_class_id' => $schoolClass->id]);
+        PklSetting::updateOrCreate(['id' => 1], ['school_level' => 'smk', 'pkl_enabled' => true, 'period' => '2026/2027', 'defense_start_date' => now()->addMonths(2)->toDateString()]);
+        LokerPkl::create(['company_name' => 'PT Digital Garut', 'location' => 'Garut', 'school_level' => 'smk', 'caption' => 'Pengembangan web dan dukungan teknologi.', 'description' => 'Mendampingi tim dalam pengembangan website, dokumentasi, dan pengujian aplikasi.', 'quota' => 5, 'application_deadline' => now()->addMonth()->toDateString(), 'status' => 'published']);
+        LokerPkl::create(['company_name' => 'Studio Kreatif Priangan', 'location' => 'Tarogong', 'school_level' => 'smk', 'caption' => 'Desain konten dan media digital.', 'description' => 'Membantu produksi konten visual, editing video, dan pengelolaan media sosial.', 'quota' => 3, 'application_deadline' => now()->addMonth()->toDateString(), 'status' => 'published']);
         User::factory(38)->create(['role' => 'student', 'student_class' => 'XI RPL 2', 'school_class_id' => $schoolClass->id, 'password' => 'password']);
         $subjects = collect([
             ['name' => 'Matematika', 'code' => 'MTK'],
