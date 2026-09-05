@@ -15,9 +15,12 @@ class StudentDashboardController extends Controller
 {
     public function index(): View
     {
+        $student = auth()->user();
+
         return view('student-dashboard', [
-            'assignments' => Assignment::query()->orderBy('due_at')->get(),
+            'assignments' => Assignment::query()->where('school_class_id', $student->school_class_id)->orderBy('due_at')->get(),
             'upcomingSchedules' => Schedule::query()
+                ->where('school_class_id', $student->school_class_id)
                 ->whereDate('schedule_date', '>=', now()->toDateString())
                 ->orderBy('schedule_date')
                 ->orderBy('starts_at')
@@ -29,7 +32,7 @@ class StudentDashboardController extends Controller
     public function schedule(): View
     {
         return $this->page('Jadwal pelajaran', 'Atur ritme belajar dengan jadwal yang selalu terbarui.', [
-            'schedules' => Schedule::query()->orderBy('schedule_date')->orderBy('starts_at')->get(),
+            'schedules' => Schedule::query()->where('school_class_id', auth()->user()->school_class_id)->orderBy('schedule_date')->orderBy('starts_at')->get(),
         ]);
     }
 
@@ -43,14 +46,14 @@ class StudentDashboardController extends Controller
     public function materials(): View
     {
         return $this->page('Materi belajar', 'Temukan materi yang dibagikan guru untuk mendukung belajarmu.', [
-            'materials' => LearningMaterial::query()->latest('published_at')->get(),
+            'materials' => LearningMaterial::query()->where('school_class_id', auth()->user()->school_class_id)->latest('published_at')->get(),
         ]);
     }
 
     public function permits(): View
     {
         return $this->page('Surat dan izin', 'Kirim pengajuan izin dan pantau status persetujuannya.', [
-            'permitRequests' => PermitRequest::query()->latest()->get(),
+            'permitRequests' => PermitRequest::query()->where('student_name', auth()->user()->name)->latest()->get(),
         ]);
     }
 

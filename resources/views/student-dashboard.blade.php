@@ -16,7 +16,7 @@
             <div class="side-label">Menu utama</div>
             <nav>
                 <button class="side-link is-active" data-nav="Beranda"><svg viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M9 21v-7h6v7"/></svg>Beranda</button>
-                <button class="side-link" data-nav="Tugas saya"><svg viewBox="0 0 24 24"><path d="M8 3h8l2 2v16H6V5z"/><path d="M9 3v4h6V3M9 12h6M9 16h4"/></svg>Tugas saya <span class="nav-count">4</span></button>
+                <a class="side-link" href="{{ route('student.assignments') }}"><svg viewBox="0 0 24 24"><path d="M8 3h8l2 2v16H6V5z"/><path d="M9 3v4h6V3M9 12h6M9 16h4"/></svg>Tugas saya <span class="nav-count">4</span></a>
                 <a class="side-link" href="{{ route('student.schedule') }}"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 9h18M8 13h.01M12 13h.01M16 13h.01M8 17h.01M12 17h.01"/></svg>Jadwal pelajaran</a>
                 <a class="side-link" href="{{ route('student.grades') }}"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h17"/><path d="m7 15 3-4 3 2 5-7"/></svg>Nilai saya</a>
             </nav>
@@ -24,9 +24,11 @@
             <nav>
                 <a class="side-link" href="{{ route('student.materials') }}"><svg viewBox="0 0 24 24"><path d="M4 5a3 3 0 0 1 3-3h13v18H7a3 3 0 0 0-3 3z"/><path d="M4 5v18M7 20h13"/></svg>Materi belajar</a>
                 <a class="side-link" href="{{ route('student.permits') }}"><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="m7 8 5 4 5-4M7 16h4"/></svg>Surat & izin</a>
+                <a class="side-link" href="{{ route('student.chat') }}"><svg viewBox="0 0 24 24"><path d="M4 5h16v12H8l-4 4z"/><path d="M8 9h8M8 13h5"/></svg>Chat guru</a>
             </nav>
             <div class="side-bottom">
                 <div class="help-card"><strong style="font-size:12px; color:#37658f;">Butuh bantuan?</strong><p>Hubungi wali kelas untuk pertanyaan seputar pembelajaran.</p><button class="text-button" data-nav="Pusat bantuan">Buka pusat bantuan &rarr;</button></div>
+                <form action="{{ route('logout') }}" method="POST" style="margin-top:12px;">@csrf<button class="side-link" type="submit"><span>↪</span>Keluar</button></form>
             </div>
         </aside>
 
@@ -36,12 +38,12 @@
                 <div class="top-actions">
                     <button class="icon-button mobile-menu" id="mobileMenu" aria-label="Buka menu"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
                     <button class="icon-button" aria-label="Notifikasi"><span class="notification-dot"></span><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></button>
-                    <div class="profile-chip"><div class="avatar">AR</div><div><strong>Aditya Ramadhan</strong><small>XI RPL 2 &bull; 2026/2027</small></div></div>
+                    <div class="profile-chip"><div class="avatar">{{ strtoupper(substr(auth()->user()->name, 0, 2)) }}</div><div><strong>{{ auth()->user()->name }}</strong><small>{{ auth()->user()->student_class ?: 'Murid' }} &bull; 2026/2027</small></div></div>
                 </div>
             </header>
 
             <section class="welcome">
-                <div><div class="eyebrow">SENIN, 7 SEPTEMBER 2026</div><h1>Selamat pagi, Aditya <span style="color:#4f8df5;">.</span></h1><p>Siap melanjutkan hal baik hari ini?</p></div>
+                <div><div class="eyebrow">SENIN, 7 SEPTEMBER 2026</div><h1>Selamat pagi, {{ auth()->user()->name }} <span style="color:#4f8df5;">.</span></h1><p>Siap melanjutkan hal baik hari ini?</p></div>
                 <div class="date-badge"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 9h18"/></svg>Semester Ganjil &nbsp;&bull;&nbsp; Minggu ke-4</div>
             </section>
 
