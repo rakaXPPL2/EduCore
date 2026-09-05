@@ -16,7 +16,9 @@ class StudentCoachController extends Controller
 {
     public function __invoke(StudentCoachRequest $request, GeminiService $gemini): JsonResponse
     {
-        $assignments = Assignment::query()->get(['title', 'subject', 'status', 'due_at']);
+        abort_unless($request->user()?->isStudent(), 403);
+
+        $assignments = Assignment::query()->where('school_class_id', $request->user()->school_class_id)->get(['title', 'subject', 'status', 'due_at']);
         $grades = Grade::query()->get(['subject', 'score']);
         $materialsCount = LearningMaterial::query()->count();
         $averageScore = round((float) $grades->avg('score'), 1);
@@ -25,7 +27,7 @@ class StudentCoachController extends Controller
         $focusSubject = $grades->sortBy('score')->first()?->subject ?? 'konsistensi belajar';
 
         $context = [
-            'student' => 'Aditya Ramadhan, siswa XI RPL 2',
+            'student' => $request->user()->name.', siswa '.($request->user()->student_class ?: 'SMK'),
             'progress' => [
                 'average_score' => $averageScore,
                 'assignments_pending' => $pendingAssignments,
