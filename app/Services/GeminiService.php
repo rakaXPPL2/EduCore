@@ -58,6 +58,29 @@ class GeminiService
     }
 
     /**
+     * @param  array<string, mixed>  $context
+     * @return array{success: bool, data?: array<string, mixed>, error?: string}
+     */
+    public function studentCoach(string $message, array $context): array
+    {
+        return $this->generateContent([
+            [
+                'text' => implode("\n", [
+                    'Kamu adalah EduCoach, pendamping belajar yang hangat untuk siswa SMK.',
+                    'Jawab dalam Bahasa Indonesia, singkat, konkret, dan tidak menghakimi.',
+                    'Gunakan data progres siswa berikut. Jangan menjanjikan penerimaan kuliah atau memberi diagnosis.',
+                    'Kembalikan JSON valid dengan struktur:',
+                    '{"reply": string, "insights": [{"label": string, "value": string}]}',
+                    'Data siswa:',
+                    json_encode($context, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+                    'Pertanyaan siswa:',
+                    $message,
+                ]),
+            ],
+        ]);
+    }
+
+    /**
      * @param  array<int, array<string, mixed>>  $parts
      * @return array{success: bool, data?: array<string, mixed>, error?: string}
      */
