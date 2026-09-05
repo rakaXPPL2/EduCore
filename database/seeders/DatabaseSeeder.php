@@ -21,39 +21,38 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        User::factory()->create([
+        User::updateOrCreate(['email' => 'test@example.com'], [
             'name' => 'Aditya Ramadhan',
-            'email' => 'test@example.com',
             'role' => 'student',
             'student_class' => 'XI RPL 2',
             'password' => 'password',
         ]);
 
-        User::factory()->create([
+        User::updateOrCreate(['email' => 'guru@educore.test'], [
             'name' => 'Dadan Sutisna',
-            'email' => 'guru@educore.test',
             'role' => 'teacher',
             'teacher_subject' => 'Basis Data',
             'password' => 'password',
         ]);
 
-        User::factory()->create([
+        User::updateOrCreate(['email' => 'admin@educore.test'], [
             'name' => 'Admin EduCore',
-            'email' => 'admin@educore.test',
             'role' => 'admin',
             'password' => 'password',
         ]);
 
-        User::factory()->create([
+        User::updateOrCreate(['email' => 'murid@educore.test'], [
             'name' => 'Aditya Ramadhan',
-            'email' => 'murid@educore.test',
             'role' => 'student',
             'student_class' => 'XI RPL 2',
             'password' => 'password',
         ]);
 
         $teacher = User::query()->where('email', 'guru@educore.test')->firstOrFail();
-        $schoolClass = SchoolClass::create(['name' => 'XI RPL 2', 'level' => 'XI', 'homeroom_teacher_id' => $teacher->id]);
+        $schoolClass = SchoolClass::firstOrCreate(
+            ['name' => 'XI RPL 2'],
+            ['level' => 'XI', 'homeroom_teacher_id' => $teacher->id],
+        );
         User::query()->where('role', 'student')->update(['school_class_id' => $schoolClass->id]);
         User::factory(38)->create(['role' => 'student', 'student_class' => 'XI RPL 2', 'school_class_id' => $schoolClass->id, 'password' => 'password']);
         $subjects = collect([
@@ -61,7 +60,7 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Basis Data', 'code' => 'BD'],
             ['name' => 'Bahasa Indonesia', 'code' => 'BIN'],
             ['name' => 'Pemrograman Web', 'code' => 'PWEB'],
-        ])->mapWithKeys(fn (array $subject): array => [$subject['name'] => Subject::create($subject)]);
+        ])->mapWithKeys(fn (array $subject): array => [$subject['name'] => Subject::firstOrCreate(['name' => $subject['name']], ['code' => $subject['code']])]);
 
         Assignment::create(['title' => 'Eksplorasi Fungsi Kuadrat', 'subject' => 'Matematika', 'subject_id' => $subjects['Matematika']->id, 'school_class_id' => $schoolClass->id, 'teacher_id' => $teacher->id, 'teacher' => $teacher->name, 'description' => 'Buat rangkuman konsep fungsi kuadrat dan selesaikan lima soal aplikasi.', 'due_at' => now()->addDay()->setTime(23, 59), 'max_points' => 100]);
         Assignment::create(['title' => 'Normalisasi Basis Data', 'subject' => 'Basis Data', 'subject_id' => $subjects['Basis Data']->id, 'school_class_id' => $schoolClass->id, 'teacher_id' => $teacher->id, 'teacher' => $teacher->name, 'description' => 'Analisis tabel transaksi menjadi bentuk normal ketiga beserta relasinya.', 'due_at' => now()->addDays(7)->setTime(23, 59), 'max_points' => 80]);
