@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -12,23 +13,35 @@ class ApiService {
     : _client = client ?? http.Client(),
       _storage = storage ?? const FlutterSecureStorage();
 
-  static const baseUrl = 'http://10.0.2.2:8000/api';
+  static const baseUrl = String.fromEnvironment(
+    'EDUCORE_API_URL',
+    defaultValue: 'http://10.0.2.2:8000/api',
+  );
   final http.Client _client;
   final FlutterSecureStorage _storage;
 
   Future<Map<String, dynamic>> login(String email, String password) async {
-    final response = await _client.post(
-      Uri.parse('$baseUrl/login'),
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({
-        'email': email,
-        'password': password,
-        'role': 'student',
-      }),
-    );
+    late final http.Response response;
+    try {
+      response = await _client
+          .post(
+            Uri.parse('$baseUrl/login'),
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+            },
+            body: jsonEncode({
+              'email': email,
+              'password': password,
+              'role': 'student',
+            }),
+          )
+          .timeout(const Duration(seconds: 10));
+    } on TimeoutException {
+      throw const ApiException('Koneksi ke server terlalu lama. Periksa Wi-Fi dan alamat API.');
+    } on SocketException {
+      throw const ApiException('Server tidak dapat dijangkau dari perangkat ini.');
+    }
     final data = _decode(response);
     final token = data['token'] as String?;
     if (token == null || token.isEmpty) {

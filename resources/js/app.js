@@ -29,9 +29,16 @@ document.addEventListener('DOMContentLoaded', () => {
 			conversation.appendChild(loading);
 
 			try {
+				const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '';
 				const response = await fetch('/api/student-coach/chat', {
 					method: 'POST',
-					headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+					headers: {
+						'Content-Type': 'application/json',
+						Accept: 'application/json',
+						'X-CSRF-TOKEN': csrfToken,
+						'X-Requested-With': 'XMLHttpRequest',
+					},
+					credentials: 'same-origin',
 					body: JSON.stringify({ message }),
 				});
 				const result = await response.json();

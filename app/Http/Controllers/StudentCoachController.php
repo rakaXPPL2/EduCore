@@ -8,13 +8,13 @@ use App\Http\Requests\StudentCoachRequest;
 use App\Models\Assignment;
 use App\Models\Grade;
 use App\Models\LearningMaterial;
-use App\Services\GeminiService;
+use App\Services\GroqService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Str;
 
 class StudentCoachController extends Controller
 {
-    public function __invoke(StudentCoachRequest $request, GeminiService $gemini): JsonResponse
+    public function __invoke(StudentCoachRequest $request, GroqService $groq): JsonResponse
     {
         abort_unless($request->user()?->isStudent(), 403);
 
@@ -47,10 +47,15 @@ class StudentCoachController extends Controller
             ])->values()->all(),
         ];
 
-        $result = $gemini->studentCoach($request->validated('message'), $context);
+        $result = $groq->askTutor($request->validated('message'), $context);
 
         if ($result['success']) {
-            return response()->json(['success' => true, 'reply' => $result['data']['reply'] ?? 'Aku sudah membaca progresmu.', 'insights' => $result['data']['insights'] ?? []]);
+            return response()->json([
+                'success' => true,
+                'reply' => $result['reply'],
+                'insights' => [],
+                'provider' => 'groq',
+            ]);
         }
 
         $message = Str::lower($request->validated('message'));

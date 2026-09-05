@@ -44,4 +44,11 @@ return [
         'ca_bundle' => env('GEMINI_CA_BUNDLE'),
     ],
 
+    'groq' => [
+        'key' => env('GROQ_API_KEY'),
+        'url' => env('GROQ_API_URL', 'https://api.groq.com/openai/v1/chat/completions'),
+        'model' => env('GROQ_API_MODEL', 'openai/gpt-oss-120b'),
+        'ca_bundle' => env('GROQ_CA_BUNDLE', env('GEMINI_CA_BUNDLE')),
+    ],
+
 ];
