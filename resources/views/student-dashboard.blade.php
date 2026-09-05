@@ -36,6 +36,7 @@
             <header class="topbar">
                 <div class="breadcrumb">Portal siswa / <strong>Beranda</strong></div>
                 <div class="top-actions">
+                    <a class="library-top-link" href="{{ route('library.dashboard') }}"><span>▣</span>E-Perpus</a>
                     <button class="icon-button mobile-menu" id="mobileMenu" aria-label="Buka menu"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
                     <button class="icon-button" aria-label="Notifikasi"><span class="notification-dot"></span><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></button>
                     <div class="profile-chip"><div class="avatar">{{ strtoupper(substr(auth()->user()->name, 0, 2)) }}</div><div><strong>{{ auth()->user()->name }}</strong><small>{{ auth()->user()->student_class ?: 'Murid' }} &bull; 2026/2027</small></div></div>

@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'role', 'student_class', 'teacher_subject', 'school_class_id'])]
+#[Fillable(['name', 'email', 'password', 'role', 'student_class', 'teacher_subject', 'school_class_id', 'nis_nip', 'class_major', 'phone_number', 'avatar', 'qr_code_token', 'literacy_points'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -52,6 +52,11 @@ class User extends Authenticatable
     public function receivedMessages(): HasMany
     {
         return $this->hasMany(ChatMessage::class, 'recipient_id');
+    }
+
+    public function loans(): HasMany
+    {
+        return $this->hasMany(Loan::class);
     }
 
     /**

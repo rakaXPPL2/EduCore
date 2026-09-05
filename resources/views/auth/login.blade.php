@@ -18,13 +18,13 @@
             @if ($errors->any())<div class="auth-error">{{ $errors->first() }}</div>@endif
             <form action="{{ route('login.store') }}" method="POST" class="auth-form">
                 @csrf
-                <div class="role-switch"><label><input type="radio" name="role" value="student" @checked(old('role', 'student') === 'student')><span><b>◒</b>Murid<small>Ruang belajar</small></span></label><label><input type="radio" name="role" value="teacher" @checked(old('role') === 'teacher')><span><b>◉</b>Guru<small>Ruang mengajar</small></span></label></div>
+                <div class="role-switch"><label><input type="radio" name="role" value="student" @checked(old('role', 'student') === 'student')><span><b>◒</b>Murid<small>Ruang belajar</small></span></label><label><input type="radio" name="role" value="teacher" @checked(old('role') === 'teacher')><span><b>◉</b>Guru<small>Ruang mengajar</small></span></label><label><input type="radio" name="role" value="admin" @checked(old('role') === 'admin')><span><b>◆</b>Admin<small>Kelola sekolah</small></span></label></div>
                 <label class="form-label">Email<input class="form-control" type="email" name="email" value="{{ old('email') }}" placeholder="nama@sekolah.sch.id" required autofocus></label>
                 <label class="form-label">Password<input class="form-control" type="password" name="password" placeholder="Masukkan password" required></label>
                 <label class="remember-row"><input type="checkbox" name="remember" value="1"> Ingat saya di perangkat ini</label>
                 <button class="primary-button" type="submit">Masuk ke portal &rarr;</button>
             </form>
-            <p class="auth-demo">Demo murid: <strong>murid@educore.test</strong> / password<br>Demo guru: <strong>guru@educore.test</strong> / password</p>
+            <p class="auth-demo">Demo murid: <strong>murid@educore.test</strong> / password<br>Demo guru: <strong>guru@educore.test</strong> / password<br>Demo admin: <strong>admin@educore.test</strong> / password</p>
         </section>
     </main>
 </body>

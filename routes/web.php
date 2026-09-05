@@ -2,6 +2,9 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Perpustakaan\AdminSirkulasiController;
+use App\Http\Controllers\Perpustakaan\DashboardController as PerpustakaanDashboardController;
+use App\Http\Controllers\Perpustakaan\LoanController;
 use App\Http\Controllers\StudentAcademicController;
 use App\Http\Controllers\StudentDashboardController;
 use App\Http\Controllers\TeacherAcademicController;
@@ -45,4 +48,23 @@ Route::middleware(['auth', 'role:teacher'])->prefix('guru')->name('teacher.')->g
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/kelas', [AdminController::class, 'classes'])->name('classes');
     Route::post('/kelas', [AdminController::class, 'storeClass'])->name('classes.store');
+});
+
+Route::middleware('auth')->prefix('perpustakaan')->name('library.')->group(function () {
+    Route::get('/', [PerpustakaanDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/katalog', [PerpustakaanDashboardController::class, 'catalog'])->name('catalog');
+    Route::get('/buku/{book}', [PerpustakaanDashboardController::class, 'show'])->name('books.show');
+    Route::get('/profil', [PerpustakaanDashboardController::class, 'profile'])->name('profile');
+    Route::get('/peminjaman', [LoanController::class, 'index'])->name('loans');
+    Route::get('/peminjaman-kelas', [LoanController::class, 'classLoans'])->middleware('role:teacher')->name('class-loans');
+    Route::post('/peminjaman-kelas', [LoanController::class, 'storeClassRequest'])->middleware('role:teacher')->name('class-loans.store');
+    Route::post('/buku/{book}/pinjam', [LoanController::class, 'store'])->middleware('role:student')->name('loans.store');
+
+    Route::middleware('role:admin')->prefix('admin/sirkulasi')->name('admin.')->group(function () {
+        Route::get('/', [AdminSirkulasiController::class, 'index'])->name('circulation');
+        Route::get('/buku', [AdminSirkulasiController::class, 'books'])->name('books');
+        Route::post('/buku', [AdminSirkulasiController::class, 'storeBook'])->name('books.store');
+        Route::get('/suggest-books', [AdminSirkulasiController::class, 'suggestBooks'])->name('suggest-books');
+        Route::patch('/{loan}/{action}', [AdminSirkulasiController::class, 'update'])->name('circulation.update');
+    });
 });
