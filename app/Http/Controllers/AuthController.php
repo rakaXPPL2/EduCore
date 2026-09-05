@@ -13,7 +13,7 @@ class AuthController extends Controller
     public function create(): View|RedirectResponse
     {
         if (Auth::check()) {
-            return to_route(Auth::user()->isTeacher() ? 'teacher.dashboard' : 'student.dashboard');
+            return to_route($this->dashboardRouteFor(Auth::user()->role));
         }
 
         return view('auth.login');
@@ -30,7 +30,7 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
-        return to_route(Auth::user()->isTeacher() ? 'teacher.dashboard' : 'student.dashboard');
+        return to_route($this->dashboardRouteFor(Auth::user()->role));
     }
 
     public function destroy(Request $request): RedirectResponse
@@ -40,5 +40,14 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         return to_route('login');
+    }
+
+    private function dashboardRouteFor(string $role): string
+    {
+        return match ($role) {
+            'admin' => 'admin.dashboard',
+            'teacher' => 'teacher.dashboard',
+            default => 'student.dashboard',
+        };
     }
 }

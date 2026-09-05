@@ -19,6 +19,7 @@
                 <a class="side-link" href="{{ route('student.assignments') }}"><svg viewBox="0 0 24 24"><path d="M8 3h8l2 2v16H6V5z"/><path d="M9 3v4h6V3M9 12h6M9 16h4"/></svg>Tugas saya <span class="nav-count">4</span></a>
                 <a class="side-link" href="{{ route('student.schedule') }}"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 9h18M8 13h.01M12 13h.01M16 13h.01M8 17h.01M12 17h.01"/></svg>Jadwal pelajaran</a>
                 <a class="side-link" href="{{ route('student.grades') }}"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h17"/><path d="m7 15 3-4 3 2 5-7"/></svg>Nilai saya</a>
+                <a class="side-link" href="{{ route('student.pkl') }}"><svg viewBox="0 0 24 24"><path d="M4 7h16v13H4z"/><path d="M8 7V4h8v3M8 12h8M8 16h5"/></svg>Program PKL</a>
             </nav>
             <div class="side-label" style="margin-top: 30px;">Layanan siswa</div>
             <nav>
